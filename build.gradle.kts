@@ -23,7 +23,7 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
 //  implementation("org.springframework.security:spring-security-oauth2-authorization-server:1.0.4")
 

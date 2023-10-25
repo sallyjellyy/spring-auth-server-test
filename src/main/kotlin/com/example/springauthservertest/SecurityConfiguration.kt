@@ -11,25 +11,28 @@ import org.springframework.security.authentication.event.AuthenticationSuccessEv
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
+import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.server.SecurityWebFilterChain
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 class SecurityConfiguration(
   @Value("\${allowList}")
   private val allowList: Array<String>
 ) {
   @Bean
   fun filterChain(
-    http: HttpSecurity,
+    http: ServerHttpSecurity,
     //    authenticationProvider: AuthenticationProvider
-  ): SecurityFilterChain {
+  ): SecurityWebFilterChain {
     return http
-      .authorizeHttpRequests {
-        it.requestMatchers(*allowList).authenticated()
-        it.anyRequest().permitAll()
+      .authorizeExchange {
+        it.pathMatchers(*allowList).authenticated()
+        it.anyExchange().permitAll()
       }
       .httpBasic(Customizer.withDefaults())
       //      .authenticationProvider(authenticationProvider)
