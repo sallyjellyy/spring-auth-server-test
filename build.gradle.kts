@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("org.springframework.boot") version "2.7.17"
+  id("org.springframework.boot") version "3.1.5"
   id("io.spring.dependency-management") version "1.0.15.RELEASE"
   kotlin("jvm") version "1.6.21"
   kotlin("plugin.spring") version "1.6.21"
@@ -25,7 +25,9 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-security")
-  implementation("org.springframework.security:spring-security-oauth2-authorization-server:0.4.4")
+//  implementation("org.springframework.security:spring-security-oauth2-authorization-server:1.0.4")
+
+  implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 }
 
 tasks.withType<KotlinCompile> {
