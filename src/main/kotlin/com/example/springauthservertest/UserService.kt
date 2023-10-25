@@ -9,11 +9,8 @@ import reactor.core.publisher.Mono
 @Service
 internal class UserService(
   private val userRepository: CustomUserRepository,
-  @Value("\${allowList}")
-  private val allowList: Array<String>
 ): ReactiveUserDetailsService {
   override fun findByUsername(username: String): Mono<UserDetails> {
-    allowList.forEach { println(it) }
     return this.userRepository.findByKey(username).cast(UserDetails::class.java)
   }
 }
