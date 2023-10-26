@@ -17,8 +17,8 @@ class AuthServerTestApplication(
     userRepository.save(
       CustomUser(
         key = "user",
-        secret = passwordEncoder.encode("pw"),
-//        secret= "{noop}pw",
+//        secret = passwordEncoder.encode("pw"),
+        secret= "{noop}pw",
         authenticated = false
       )
     ).subscribe()

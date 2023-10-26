@@ -18,8 +18,6 @@ internal class CustomAuthenticationProvider(
         val secret = authentication.credentials.toString()
         val user = this.userService.findByUsername(key).block()
 
-        println("provider here!**********************************")
-
         if (user == null || !passwordEncoder.matches(secret, user.password)) {
             throw Exception()
         }

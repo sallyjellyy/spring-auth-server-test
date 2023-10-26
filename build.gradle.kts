@@ -29,6 +29,9 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+
+//  implementation("jakarta.servlet:jakarta.servlet-api")
 }
 
 tasks.withType<KotlinCompile> {
