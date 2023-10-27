@@ -53,8 +53,8 @@ class SecurityConfiguration(
     return http
       .csrf { it.disable() }
       .authorizeExchange {
-        it.pathMatchers(*allowList).authenticated()
-        it.anyExchange().permitAll()
+        it.pathMatchers(*allowList).permitAll()
+        it.anyExchange().authenticated()
       }
       .httpBasic { it.disable() }
       .formLogin { it.disable() }
