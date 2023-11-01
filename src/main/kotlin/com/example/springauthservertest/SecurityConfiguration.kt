@@ -10,29 +10,18 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
-import org.springframework.core.io.ClassPathResource
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.ReactiveAuthenticationManager
-import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter
-import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.rsa.crypto.KeyStoreKeyFactory
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
 import org.springframework.web.server.WebFilter
-import java.security.KeyPair
-import java.security.interfaces.RSAPrivateKey
-import java.security.interfaces.RSAPublicKey
 
 @Configuration
 @EnableWebFluxSecurity
@@ -61,7 +50,7 @@ class SecurityConfiguration(
         it.anyExchange().authenticated()
       }
       .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-      .addFilterAt(
+      .addFilterBefore(
         AuthenticationWebFilter(authenticationManager)
           .apply {
             this.setServerAuthenticationConverter(serverAuthenticationConverter)
@@ -69,7 +58,7 @@ class SecurityConfiguration(
           },
         SecurityWebFiltersOrder.AUTHENTICATION
       )
-      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.HTTP_BASIC)
       .build()
 
   @Bean

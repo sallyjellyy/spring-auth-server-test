@@ -7,7 +7,6 @@ import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.AuthorityUtils
@@ -46,7 +45,6 @@ class JwtTokenProvider(
   fun validateToken(token: String): Boolean =
     try {
       SignedJWT.parse(token).verify(verifier)
-      true
     } catch (e: Exception) {
       false
     }
