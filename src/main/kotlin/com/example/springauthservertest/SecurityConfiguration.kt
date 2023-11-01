@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationProvider
@@ -41,6 +43,7 @@ class SecurityConfiguration(
   private val secretKey: String
 ) {
   @Bean
+  @Order(Ordered.HIGHEST_PRECEDENCE)
   fun filterChain(
     http: ServerHttpSecurity,
     authenticationManager: ReactiveAuthenticationManager,
@@ -48,8 +51,8 @@ class SecurityConfiguration(
     serverAuthenticationSuccessHandler: ServerAuthenticationSuccessHandler,
     @Qualifier("JwtTokenAuthenticationFilter")
     jwtTokenAuthFilter: WebFilter
-  ): SecurityWebFilterChain {
-    return http
+  ): SecurityWebFilterChain =
+    http
       .csrf { it.disable() }
       .httpBasic { it.disable() }
       .formLogin { it.disable() }
@@ -68,7 +71,6 @@ class SecurityConfiguration(
       )
       .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
       .build()
-  }
 
   @Bean
   fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
