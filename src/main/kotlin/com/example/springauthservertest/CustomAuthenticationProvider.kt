@@ -1,28 +1,29 @@
 package com.example.springauthservertest
 
 import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 
 @Component
 internal class CustomAuthenticationProvider(
-    private val customUserService: CustomUserService,
-    private val passwordEncoder: PasswordEncoder
-) : AuthenticationProvider {
-    override fun authenticate(authentication: Authentication): Authentication {
-        val key = authentication.name
-        val secret = authentication.credentials.toString()
-        val user = this.customUserService.findByUsername(key).block()
+  private val customUserService: CustomUserService,
+  private val passwordEncoder: PasswordEncoder
+): ReactiveAuthenticationManager {
+  override fun authenticate(authentication: Authentication): Mono<Authentication> {
+    val key = authentication.name
+    val secret = authentication.credentials.toString()
 
+    return this.customUserService.findByUsername(key)
+      .flatMap { user ->
         if (user == null || !passwordEncoder.matches(secret, user.password)) {
-            throw Exception()
+          Mono.error(Exception(""))
+        } else {
+          Mono.just(UsernamePasswordAuthenticationToken(user.username, secret, user.authorities))
         }
-
-        return UsernamePasswordAuthenticationToken(user, secret, user.authorities)
-    }
-
-    override fun supports(authentication: Class<*>?): Boolean =
-        authentication == UsernamePasswordAuthenticationToken::class.java
+      }
+  }
 }

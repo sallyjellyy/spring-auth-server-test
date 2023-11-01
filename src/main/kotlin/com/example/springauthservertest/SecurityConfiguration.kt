@@ -8,17 +8,29 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ClassPathResource
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.ReactiveAuthenticationManager
+import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.rsa.crypto.KeyStoreKeyFactory
 import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.authentication.AuthenticationWebFilter
+import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
+import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
 import org.springframework.web.server.WebFilter
+import java.security.KeyPair
+import java.security.interfaces.RSAPrivateKey
+import java.security.interfaces.RSAPublicKey
 
 @Configuration
 @EnableWebFluxSecurity
@@ -31,11 +43,11 @@ class SecurityConfiguration(
   @Bean
   fun filterChain(
     http: ServerHttpSecurity,
-    //    authenticationManager: ReactiveAuthenticationManager,
-    //    serverAuthenticationConverter: ServerAuthenticationConverter
+    authenticationManager: ReactiveAuthenticationManager,
+    serverAuthenticationConverter: ServerAuthenticationConverter,
+    serverAuthenticationSuccessHandler: ServerAuthenticationSuccessHandler,
     @Qualifier("JwtTokenAuthenticationFilter")
     jwtTokenAuthFilter: WebFilter
-    //    authenticationProvider: AuthenticationProvider
   ): SecurityWebFilterChain {
     return http
       .csrf { it.disable() }
@@ -46,46 +58,35 @@ class SecurityConfiguration(
         it.anyExchange().authenticated()
       }
       .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-      //      .authenticationManager(authenticationManager)
-      //      .addFilterAt(
-      //        AuthenticationWebFilter(authenticationManager)
-      //          .apply {
-      //            this.setServerAuthenticationConverter(serverAuthenticationConverter)
-      //          },
-      //        SecurityWebFiltersOrder.AUTHENTICATION
-      //      )
+      .addFilterAt(
+        AuthenticationWebFilter(authenticationManager)
+          .apply {
+            this.setServerAuthenticationConverter(serverAuthenticationConverter)
+            this.setAuthenticationSuccessHandler(serverAuthenticationSuccessHandler)
+          },
+        SecurityWebFiltersOrder.AUTHENTICATION
+      )
       .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
       .build()
-  }
-
-  //  @Bean
-  //  fun authenticationManager(authenticationProvider: AuthenticationProvider): ReactiveAuthenticationManager =
-  //    ReactiveAuthenticationManagerAdapter(ProviderManager(authenticationProvider))
-
-  @Bean
-  fun authenticationManager(
-    userService: ReactiveUserDetailsService,
-    passwordEncoder: PasswordEncoder
-  ): ReactiveAuthenticationManager {
-    var authenticationManager = UserDetailsRepositoryReactiveAuthenticationManager(userService)
-    authenticationManager.setPasswordEncoder(passwordEncoder)
-    return authenticationManager
   }
 
   @Bean
   fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
-//  @Bean
-//  fun keyPair(): KeyPair {
-//    val keyStoreKeyFactory = KeyStoreKeyFactory(ClassPathResource("/cobalt-server.jks"), this.secretKey.toCharArray())
-//    return keyStoreKeyFactory.getKeyPair("cobalt-server")
-//  }
+  //  @Bean
+  //  fun keyPair(): KeyPair {
+  //    val keyStoreKeyFactory = KeyStoreKeyFactory(ClassPathResource("/cobalt-server.jks"), this.secretKey.toCharArray())
+  //    return keyStoreKeyFactory.getKeyPair("cobalt-server")
+  //  }
 
   @Bean
   fun jwsRSAKey(): RSAKey =
+  //    RSAKey.Builder(keyPair.public as RSAPublicKey)
+    //      .privateKey(keyPair.private as RSAPrivateKey)
     RSAKeyGenerator(2048)
       .algorithm(JWSAlgorithm.RS256)
       .keyUse(KeyUse.SIGNATURE)
       .keyID("KEY_ID")
+      //      .build()
       .generate()
 }

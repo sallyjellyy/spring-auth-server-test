@@ -17,8 +17,6 @@ import java.util.Date
 
 @Component
 class JwtTokenProvider(
-  @Value("\${security.key}")
-  private val secretKey: String,
   private val rsaKey: RSAKey
 ) {
   private val signer = RSASSASigner(rsaKey)
@@ -43,10 +41,6 @@ class JwtTokenProvider(
   fun getAuthentication(token: String): Authentication {
     val claimSet = SignedJWT.parse(token).jwtClaimsSet
     return UsernamePasswordAuthenticationToken(claimSet.subject, token, AuthorityUtils.NO_AUTHORITIES)
-  }
-
-  fun decode(token: String) {
-    SignedJWT.parse(token).verify(verifier)
   }
 
   fun validateToken(token: String): Boolean =

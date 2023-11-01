@@ -18,7 +18,6 @@ class AuthServerTestApplication(
       CustomUser(
         key = "user",
         secret = passwordEncoder.encode("pw"),
-//        secret= "{noop}pw",
         authenticated = false
       )
     ).subscribe()
