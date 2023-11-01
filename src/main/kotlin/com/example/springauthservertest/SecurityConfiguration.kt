@@ -58,17 +58,12 @@ class SecurityConfiguration(
           },
         SecurityWebFiltersOrder.AUTHENTICATION
       )
+      .oauth2Login {  }
       .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.HTTP_BASIC)
       .build()
 
   @Bean
   fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
-
-  //  @Bean
-  //  fun keyPair(): KeyPair {
-  //    val keyStoreKeyFactory = KeyStoreKeyFactory(ClassPathResource("/cobalt-server.jks"), this.secretKey.toCharArray())
-  //    return keyStoreKeyFactory.getKeyPair("cobalt-server")
-  //  }
 
   @Bean
   fun jwsRSAKey(): RSAKey =

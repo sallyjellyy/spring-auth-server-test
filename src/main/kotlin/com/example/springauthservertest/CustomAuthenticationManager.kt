@@ -1,6 +1,5 @@
 package com.example.springauthservertest
 
-import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -9,7 +8,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
-internal class CustomAuthenticationProvider(
+internal class CustomAuthenticationManager(
   private val customUserService: CustomUserService,
   private val passwordEncoder: PasswordEncoder
 ): ReactiveAuthenticationManager {
