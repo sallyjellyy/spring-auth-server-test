@@ -9,16 +9,21 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class AuthServerTestApplication(
   private val userRepository: CustomUserRepository,
   private val passwordEncoder: PasswordEncoder
-)
-  : CommandLineRunner {
+): CommandLineRunner {
   override fun run(vararg args: String?) {
     userRepository.deleteAll().subscribe()
 
-    userRepository.save(
-      CustomUser(
-        key = "user",
-        secret = passwordEncoder.encode("pw"),
-        authenticated = false
+    userRepository.saveAll(
+      listOf(
+        CustomUser(
+          key = "user",
+          secret = passwordEncoder.encode("pw"),
+          authenticated = false
+        ), CustomUser(
+          key = "user2",
+          secret = passwordEncoder.encode("pw2"),
+          authenticated = false
+        )
       )
     ).subscribe()
 

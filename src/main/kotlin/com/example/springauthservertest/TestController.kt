@@ -11,7 +11,7 @@ internal class TestController {
   fun home(): String = "Welcome home"
 
   @GetMapping("/user")
-  fun user(authentication: Authentication): String = "Welcome ${authentication.name}"
+  fun user(authentication: Authentication): String = "Welcome ${authentication.principal}"
 
   @GetMapping("/admin")
   fun admin(authentication: Authentication): String = "Welcome admin"

@@ -1,11 +1,7 @@
 package com.example.springauthservertest
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt
 import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.Transient
 import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 

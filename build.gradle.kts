@@ -25,12 +25,14 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
+  implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
   implementation("com.nimbusds:nimbus-jose-jwt:9.37")
   implementation("org.springframework.security:spring-security-rsa:1.1.1")
+  implementation("org.springframework.security:spring-security-oauth2-client")
 
 }
 

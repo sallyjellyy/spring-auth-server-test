@@ -1,14 +1,15 @@
 package com.example.springauthservertest
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.springframework.http.HttpHeaders
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.server.WebFilterExchange
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
-@Component
-class SuccessHandler(
+@Component("UsernamePasswordSuccessHandler")
+class UsernamePasswordSuccessHandler(
   private val jwtTokenProvider: JwtTokenProvider
 ): ServerAuthenticationSuccessHandler {
   override fun onAuthenticationSuccess(
@@ -16,8 +17,10 @@ class SuccessHandler(
     authentication: Authentication
   ): Mono<Void> {
     val token = this.jwtTokenProvider.generate(authentication.principal as String)
-    webFilterExchange.exchange.response.headers.set("Authorization", token)
-    println("Success!!!!!!!!!!!!!")
-    return Mono.empty()
+    val response = webFilterExchange.exchange.response
+    val buffer = response.bufferFactory().wrap(jacksonObjectMapper().writeValueAsBytes(mapOf("accessToken" to token)))
+    response.headers.set(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8")
+
+    return response.writeWith(Mono.just(buffer))
   }
 }
