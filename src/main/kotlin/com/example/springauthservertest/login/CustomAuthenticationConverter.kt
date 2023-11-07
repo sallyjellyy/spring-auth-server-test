@@ -1,4 +1,4 @@
-package com.example.springauthservertest
+package com.example.springauthservertest.login
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

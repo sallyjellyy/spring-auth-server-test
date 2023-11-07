@@ -11,24 +11,16 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.security.authentication.ReactiveAuthenticationManager
-import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcReactiveOAuth2UserService
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
-import org.springframework.security.oauth2.client.userinfo.ReactiveOAuth2UserService
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
-import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler
+import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher
 import org.springframework.web.server.WebFilter
@@ -42,45 +34,19 @@ class SecurityConfiguration(
   @Value("\${security.key}")
   private val secretKey: String
 ) {
-  //  @Bean
-  //  fun filterChain(
-  //    http: ServerHttpSecurity,
-  //    authenticationManager: ReactiveAuthenticationManager,
-  //    serverAuthenticationConverter: ServerAuthenticationConverter,
-  //    @Qualifier("UsernamePasswordSuccessHandler")
-  //    serverAuthenticationSuccessHandler: ServerAuthenticationSuccessHandler,
-  //    @Qualifier("JwtTokenAuthenticationFilter")
-  //    jwtTokenAuthFilter: WebFilter
-  //  ): SecurityWebFilterChain =
-  //    http
-  //      .csrf { it.disable() }
-  //      .httpBasic { it.disable() }
-  //      .formLogin { it.disable() }
-  //      .authorizeExchange {
-  //        it.pathMatchers(*allowList).permitAll()
-  //        it.anyExchange().authenticated()
-  //      }
-  //      .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-  //      .addFilterBefore(
-  //        AuthenticationWebFilter(authenticationManager)
-  //          .apply {
-  //            this.setServerAuthenticationConverter(serverAuthenticationConverter)
-  //            this.setAuthenticationSuccessHandler(serverAuthenticationSuccessHandler)
-  //          },
-  //        SecurityWebFiltersOrder.AUTHENTICATION
-  //      )
-  //      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.HTTP_BASIC)
-  //      .build()
-
   @Bean
-  @Order(Ordered.HIGHEST_PRECEDENCE)
-  fun oauthFilterChain(
+  fun filterChain(
     http: ServerHttpSecurity,
+    authenticationManager: ReactiveAuthenticationManager,
+    serverAuthenticationConverter: ServerAuthenticationConverter,
+    @Qualifier("UsernamePasswordSuccessHandler")
+    usernamePasswordSuccessHandler: ServerAuthenticationSuccessHandler,
     @Qualifier("OAuthSuccessHandler")
-    serverAuthenticationHandler: ServerAuthenticationSuccessHandler
+    oAuthSuccessHandler: ServerAuthenticationSuccessHandler,
+    @Qualifier("JwtTokenAuthenticationFilter")
+    jwtTokenAuthFilter: WebFilter
   ): SecurityWebFilterChain =
     http
-      //      .securityMatcher(PathPatternParserServerWebExchangeMatcher("/login"))
       .csrf { it.disable() }
       .httpBasic { it.disable() }
       .formLogin { it.disable() }
@@ -88,28 +54,55 @@ class SecurityConfiguration(
         it.pathMatchers(*allowList).permitAll()
         it.anyExchange().authenticated()
       }
+      .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+      .addFilterBefore(
+        AuthenticationWebFilter(authenticationManager)
+          .apply {
+            //            this.setRequiresAuthenticationMatcher(PathPatternParserServerWebExchangeMatcher("/login"))
+            this.setServerAuthenticationConverter(serverAuthenticationConverter)
+            this.setAuthenticationSuccessHandler(usernamePasswordSuccessHandler)
+          },
+        SecurityWebFiltersOrder.AUTHENTICATION
+      )
       .oauth2Login {
-        it.authenticationSuccessHandler(serverAuthenticationHandler)
+        it.authenticationSuccessHandler(oAuthSuccessHandler)
+      }
+      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.LOGOUT)
+      .exceptionHandling {
+        it.accessDeniedHandler { exchange, exception ->
+          println("access denied")
+          Mono.error(Exception("access denied"))
+        }
       }
       .build()
 
+  //  @Bean
+  //  @Order(Ordered.HIGHEST_PRECEDENCE)
+  //  fun oauthFilterChain(
+  //    http: ServerHttpSecurity,
+  //    @Qualifier("OAuthSuccessHandler")
+  //    serverAuthenticationHandler: ServerAuthenticationSuccessHandler,
+  //    @Qualifier("JwtTokenAuthenticationFilter")
+  //    jwtTokenAuthFilter: WebFilter
+  //  ): SecurityWebFilterChain =
+  //    http
+  //      //      .securityMatcher(PathPatternParserServerWebExchangeMatcher("/login"))
+  //      .csrf { it.disable() }
+  //      .httpBasic { it.disable() }
+  //      .formLogin { it.disable() }
+  //      .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+  //      .authorizeExchange {
+  //        it.pathMatchers(*allowList).permitAll()
+  //        it.anyExchange().authenticated()
+  //      }
+  //      .oauth2Login {
+  //        it.authenticationSuccessHandler(serverAuthenticationHandler)
+  //      }
+  //      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.LOGOUT)
+  //      .build()
+
   @Bean
   fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
-
-  @Bean
-  fun oidcUserService(): ReactiveOAuth2UserService<OidcUserRequest, OidcUser> {
-    val delegate = OidcReactiveOAuth2UserService()
-
-    return ReactiveOAuth2UserService { userRequest ->
-      // Delegate to the default implementation for loading a user
-      delegate.loadUser(userRequest)
-        .flatMap { oidcUser ->
-          val registrationId = userRequest.clientRegistration.registrationId
-          val attributes = (oidcUser as OAuth2AuthenticatedPrincipal).getAttribute<Map<String, Any>>()
-          val
-        }
-    }
-  }
 
   //  @Bean
   //  fun keyPair(): KeyPair {

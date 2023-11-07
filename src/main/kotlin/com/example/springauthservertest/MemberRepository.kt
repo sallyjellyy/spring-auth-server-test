@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 
 @Repository
-interface CustomUserRepository: ReactiveMongoRepository<CustomUser, String> {
-  fun findByKey(username: String): Mono<CustomUser>
+interface MemberRepository: ReactiveMongoRepository<Member, String> {
+  fun findByUsername(username: String): Mono<Member>
 }

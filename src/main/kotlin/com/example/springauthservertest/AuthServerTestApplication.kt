@@ -7,27 +7,27 @@ import org.springframework.security.crypto.password.PasswordEncoder
 
 @SpringBootApplication
 class AuthServerTestApplication(
-  private val userRepository: CustomUserRepository,
+  private val memberRepository: MemberRepository,
   private val passwordEncoder: PasswordEncoder
 ): CommandLineRunner {
   override fun run(vararg args: String?) {
-    userRepository.deleteAll().subscribe()
+    memberRepository.deleteAll().subscribe()
 
-    userRepository.saveAll(
+    memberRepository.saveAll(
       listOf(
-        CustomUser(
-          key = "user",
+        Member(
+          username = "user",
           secret = passwordEncoder.encode("pw"),
-          authenticated = false
-        ), CustomUser(
-          key = "user2",
+          type = Member.SocialType.NONE
+        ), Member(
+          username = "user2",
           secret = passwordEncoder.encode("pw2"),
-          authenticated = false
+          type = Member.SocialType.NONE
         )
       )
     ).subscribe()
 
-    userRepository.findAll().map { println(it) }.subscribe()
+    memberRepository.findAll().map { println(it) }.subscribe()
   }
 }
 

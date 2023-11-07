@@ -15,4 +15,10 @@ internal class TestController {
 
   @GetMapping("/admin")
   fun admin(authentication: Authentication): String = "Welcome admin"
+
+  @GetMapping("/login")
+  fun login(): String = "Loggin you in..."
+
+  @GetMapping("/oauth")
+  fun oauth(): String = "oauth!"
 }

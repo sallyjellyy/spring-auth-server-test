@@ -1,5 +1,6 @@
-package com.example.springauthservertest
+package com.example.springauthservertest.login
 
+import com.example.springauthservertest.login.CustomUserService
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication

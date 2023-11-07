@@ -1,4 +1,4 @@
-package com.example.springauthservertest
+package com.example.springauthservertest.jwt
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.server.reactive.ServerHttpRequest

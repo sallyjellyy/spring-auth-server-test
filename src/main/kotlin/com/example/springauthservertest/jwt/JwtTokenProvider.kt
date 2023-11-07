@@ -1,4 +1,4 @@
-package com.example.springauthservertest
+package com.example.springauthservertest.jwt
 
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
