@@ -8,19 +8,23 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.client.registration.ClientRegistration
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver
+import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler
-import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher
 import org.springframework.web.server.WebFilter
@@ -44,7 +48,8 @@ class SecurityConfiguration(
     @Qualifier("OAuthSuccessHandler")
     oAuthSuccessHandler: ServerAuthenticationSuccessHandler,
     @Qualifier("JwtTokenAuthenticationFilter")
-    jwtTokenAuthFilter: WebFilter
+    jwtTokenAuthFilter: WebFilter,
+//    oAuth2AuthorizationRequestResolver: ServerOAuth2AuthorizationRequestResolver
   ): SecurityWebFilterChain =
     http
       .csrf { it.disable() }
@@ -55,26 +60,60 @@ class SecurityConfiguration(
         it.anyExchange().authenticated()
       }
       .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-      .addFilterBefore(
+      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.LOGOUT)
+      .addFilterAt(
         AuthenticationWebFilter(authenticationManager)
           .apply {
-            //            this.setRequiresAuthenticationMatcher(PathPatternParserServerWebExchangeMatcher("/login"))
+            this.setRequiresAuthenticationMatcher(PathPatternParserServerWebExchangeMatcher("/username"))
             this.setServerAuthenticationConverter(serverAuthenticationConverter)
             this.setAuthenticationSuccessHandler(usernamePasswordSuccessHandler)
           },
         SecurityWebFiltersOrder.AUTHENTICATION
       )
       .oauth2Login {
+//        it.authorizationRequestResolver(oAuth2AuthorizationRequestResolver)
+//        it.authenticationMatcher(PathPatternParserServerWebExchangeMatcher("/oauth2/code/{registrationId}"))
         it.authenticationSuccessHandler(oAuthSuccessHandler)
       }
-      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.LOGOUT)
       .exceptionHandling {
+//        it.authenticationEntryPoint(RedirectServerAuthenticationEntryPoint("/testing/oauth2"))
         it.accessDeniedHandler { exchange, exception ->
           println("access denied")
           Mono.error(Exception("access denied"))
         }
       }
       .build()
+//
+//  @Bean
+//  fun authorizationRequestResolver(clientRegistrationRepository: ReactiveClientRegistrationRepository): ServerOAuth2AuthorizationRequestResolver =
+//    DefaultServerOAuth2AuthorizationRequestResolver(
+//      clientRegistrationRepository, PathPatternParserServerWebExchangeMatcher("/oauth/{registrationId}")
+//    )
+//
+//  @Bean
+//  fun clientRegistrationRepository(): ReactiveClientRegistrationRepository =
+//    InMemoryReactiveClientRegistrationRepository(
+//      listOf(
+//        ClientRegistration.withRegistrationId("github")
+//          .clientId("4225a0b60ae5b4e6c519")
+//          .clientSecret("c7aecf39bacf8d319ebc519e08d42ccc311b2fef")
+//          .scope("email")
+//          .redirectUri("{basePath}/oauth2/code/github")
+//          .authorizationUri("https://github.com/login/oauth/authorize")
+//          .tokenUri("https://github.com/login/oauth/access_token")
+//          .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+//          .build(),
+//        ClientRegistration.withRegistrationId("google")
+//          .clientId("1050889112752-9j0fkvsrnfuaap5h106omltqdip746ur.apps.googleusercontent.com")
+//          .clientSecret("WB5vuxBQKhDyDupwunsnyotEU1j4")
+//          .scope(listOf("email", "openid"))
+//          .redirectUri("http://localhost:9001/login/oauth2/code/google")
+//          .authorizationUri("https://github.com/login/oauth/authorize")
+//          .tokenUri("https://github.com/login/oauth/access_token")
+//          .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+//          .build()
+//      )
+//    )
 
   //  @Bean
   //  @Order(Ordered.HIGHEST_PRECEDENCE)
