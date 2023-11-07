@@ -49,7 +49,6 @@ class SecurityConfiguration(
     oAuthSuccessHandler: ServerAuthenticationSuccessHandler,
     @Qualifier("JwtTokenAuthenticationFilter")
     jwtTokenAuthFilter: WebFilter,
-//    oAuth2AuthorizationRequestResolver: ServerOAuth2AuthorizationRequestResolver
   ): SecurityWebFilterChain =
     http
       .csrf { it.disable() }
@@ -71,74 +70,15 @@ class SecurityConfiguration(
         SecurityWebFiltersOrder.AUTHENTICATION
       )
       .oauth2Login {
-//        it.authorizationRequestResolver(oAuth2AuthorizationRequestResolver)
-//        it.authenticationMatcher(PathPatternParserServerWebExchangeMatcher("/oauth2/code/{registrationId}"))
         it.authenticationSuccessHandler(oAuthSuccessHandler)
       }
       .exceptionHandling {
-//        it.authenticationEntryPoint(RedirectServerAuthenticationEntryPoint("/testing/oauth2"))
         it.accessDeniedHandler { exchange, exception ->
           println("access denied")
           Mono.error(Exception("access denied"))
         }
       }
       .build()
-//
-//  @Bean
-//  fun authorizationRequestResolver(clientRegistrationRepository: ReactiveClientRegistrationRepository): ServerOAuth2AuthorizationRequestResolver =
-//    DefaultServerOAuth2AuthorizationRequestResolver(
-//      clientRegistrationRepository, PathPatternParserServerWebExchangeMatcher("/oauth/{registrationId}")
-//    )
-//
-//  @Bean
-//  fun clientRegistrationRepository(): ReactiveClientRegistrationRepository =
-//    InMemoryReactiveClientRegistrationRepository(
-//      listOf(
-//        ClientRegistration.withRegistrationId("github")
-//          .clientId("4225a0b60ae5b4e6c519")
-//          .clientSecret("c7aecf39bacf8d319ebc519e08d42ccc311b2fef")
-//          .scope("email")
-//          .redirectUri("{basePath}/oauth2/code/github")
-//          .authorizationUri("https://github.com/login/oauth/authorize")
-//          .tokenUri("https://github.com/login/oauth/access_token")
-//          .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-//          .build(),
-//        ClientRegistration.withRegistrationId("google")
-//          .clientId("1050889112752-9j0fkvsrnfuaap5h106omltqdip746ur.apps.googleusercontent.com")
-//          .clientSecret("WB5vuxBQKhDyDupwunsnyotEU1j4")
-//          .scope(listOf("email", "openid"))
-//          .redirectUri("http://localhost:9001/login/oauth2/code/google")
-//          .authorizationUri("https://github.com/login/oauth/authorize")
-//          .tokenUri("https://github.com/login/oauth/access_token")
-//          .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-//          .build()
-//      )
-//    )
-
-  //  @Bean
-  //  @Order(Ordered.HIGHEST_PRECEDENCE)
-  //  fun oauthFilterChain(
-  //    http: ServerHttpSecurity,
-  //    @Qualifier("OAuthSuccessHandler")
-  //    serverAuthenticationHandler: ServerAuthenticationSuccessHandler,
-  //    @Qualifier("JwtTokenAuthenticationFilter")
-  //    jwtTokenAuthFilter: WebFilter
-  //  ): SecurityWebFilterChain =
-  //    http
-  //      //      .securityMatcher(PathPatternParserServerWebExchangeMatcher("/login"))
-  //      .csrf { it.disable() }
-  //      .httpBasic { it.disable() }
-  //      .formLogin { it.disable() }
-  //      .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-  //      .authorizeExchange {
-  //        it.pathMatchers(*allowList).permitAll()
-  //        it.anyExchange().authenticated()
-  //      }
-  //      .oauth2Login {
-  //        it.authenticationSuccessHandler(serverAuthenticationHandler)
-  //      }
-  //      .addFilterAt(jwtTokenAuthFilter, SecurityWebFiltersOrder.LOGOUT)
-  //      .build()
 
   @Bean
   fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
